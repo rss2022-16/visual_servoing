@@ -25,16 +25,25 @@ class ParkingController():
             ParkingError, queue_size=10)
 
         self.parking_distance = 0.75 # meters; try playing with this number!
-        self.park_tolerance = 0.05
+        self.angle_tolerance = 0.05 
+        #calculate acceptable angle error proportion to parking_distance
+        self.parking_angle = abs(math.atan(self.angle_tolerance/self.parking_distance))
+        #acceptable error regarding parked distance away
+        self.park_tolerance = 0.15
+
+        #cone coordinate
         self.relative_x = 0
         self.relative_y = 0
         self.velocity = 0.5
+        
 
     def relative_cone_callback(self, msg):
         self.relative_x = msg.x_pos
         self.relative_y = msg.y_pos
+
+        #purepursuit arguments
         look_ahead = 0.3
-        car_length = 0.3
+        car_length = 0.37
 
         v = None
         steer = None
@@ -43,16 +52,30 @@ class ParkingController():
         print(distance)
         print(angle)
 
-        
-        if(abs(distance - self.parking_distance) < self.park_tolerance and abs(angle) < np.pi/8):
+        #calculate the turning angle needed to park in front of cone
+        if(abs(distance - self.parking_distance) < self.park_tolerance and abs(angle) < self.parking_angle):
             v = 0.0
             steer = 0.0
-        elif(distance > self.parking_distance):
-            (steer, v) = pp.purepursuit(look_ahead, car_length, self.velocity, 0, 0, 0, np.array(([0,0], [self.relative_x, self.relative_y])))   
-        elif(distance < self.parking_distance):
-            v = -self.velocity
-            steer = (math.atan(self.relative_y/self.relative_x) + np.pi) % 2*np.pi
-        print("v: " + str(v))
+        # elif(abs(angle) > self.parking_angle):
+        #     if(distance < self.parking_distance + self.park_tolerance):
+        #         v = -self.velocity
+        #         steer = -(math.atan(self.relative_y/self.relative_x))
+        #     else:
+        #         (steer, v) = pp.purepursuit(look_ahead, car_length, self.velocity, 0, 0, 0, np.array(([0,0], [self.relative_x, self.relative_y])))
+        else:
+            if(abs(angle) > self.parking_angle):
+                if(distance < self.parking_distance + 0.5):
+                    v = -self.velocity
+                    steer = -(math.atan(self.relative_y/self.relative_x))
+                else:
+                    (steer, v) = pp.purepursuit(look_ahead, car_length, self.velocity, 0, 0, 0, np.array(([0,0], [self.relative_x, self.relative_y])))
+            else:
+                if(distance < self.parking_distance):
+                    v = -self.velocity
+                    steer = -(math.atan(self.relative_y/self.relative_x))
+                else:
+                    (steer, v) = pp.purepursuit(look_ahead, car_length, self.velocity, 0, 0, 0, np.array(([0,0], [self.relative_x, self.relative_y])))
+
         drive_cmd = AckermannDriveStamped()
         drive_cmd.header.stamp = rospy.Time.now()
         drive_cmd.header.frame_id = "base_link"
@@ -62,10 +85,11 @@ class ParkingController():
         self.drive_pub.publish(drive_cmd)
         self.error_publisher()
 
-    
+    # find the distance between target coordinate and car
     def check_distance(self):
         return math.sqrt(self.relative_x**2 + self.relative_y**2)
 
+    # find the angle the car is facing away from target coordinate
     def check_angle(self):
         return math.atan(self.relative_y/self.relative_x)
 
