@@ -11,6 +11,7 @@ from sensor_msgs.msg import Image
 from ackermann_msgs.msg import AckermannDriveStamped
 from visualization_msgs.msg import Marker
 from visual_servoing.msg import ConeLocation, ConeLocationPixel
+from geometry_msgs.msg import Point
 
 #The following collection of pixel locations and corresponding relative
 #ground plane locations are used to compute our homography matrix
@@ -20,10 +21,10 @@ from visual_servoing.msg import ConeLocation, ConeLocationPixel
 
 ######################################################
 ## DUMMY POINTS -- ENTER YOUR MEASUREMENTS HERE
-PTS_IMAGE_PLANE = [[-1, -1],
-                   [-1, -1],
-                   [-1, -1],
-                   [-1, -1]] # dummy points
+PTS_IMAGE_PLANE = [[439.0, 202.0],
+                   [240.0, 166.0],
+                   [647.0, 198.0],
+                   [320.0, 164.0]] 
 ######################################################
 
 # PTS_GROUND_PLANE units are in inches
@@ -31,10 +32,10 @@ PTS_IMAGE_PLANE = [[-1, -1],
 
 ######################################################
 ## DUMMY POINTS -- ENTER YOUR MEASUREMENTS HERE
-PTS_GROUND_PLANE = [[-1, -1],
-                    [-1, -1],
-                    [-1, -1],
-                    [-1, -1]] # dummy points
+PTS_GROUND_PLANE = [[27.0, -5.0],
+                    [61.0, 18.0],
+                    [41.0, -37.0],
+                    [125.0, 12.0]]
 ######################################################
 
 METERS_PER_INCH = 0.0254
@@ -45,6 +46,10 @@ class HomographyTransformer:
         self.cone_px_sub = rospy.Subscriber("/relative_cone_px", ConeLocationPixel, self.cone_detection_callback)
         self.cone_pub = rospy.Publisher("/relative_cone", ConeLocation, queue_size=10)
 
+
+        self.drawing = rospy.Subscriber("/zed/zed_node/rgb/image_rect_color_mouse_left", Point, self.call_marker)
+
+        print ("started")
         self.marker_pub = rospy.Publisher("/cone_marker",
             Marker, queue_size=1)
 
@@ -62,6 +67,16 @@ class HomographyTransformer:
         np_pts_image = np.float32(np_pts_image[:, np.newaxis, :])
 
         self.h, err = cv2.findHomography(np_pts_image, np_pts_ground)
+
+
+    def call_marker(self, msg):
+        print ("ENTERED")
+        u = msg.x
+        v = msg.y
+
+        #Call to main function
+        x_coord, y_coord = self.transformUvToXy(u, v)
+        self.draw_marker(x_coord, y_coord, "base_link")
 
     def cone_detection_callback(self, msg):
         #Extract information from message
