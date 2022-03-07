@@ -67,6 +67,9 @@ class ParkingController():
                 if(distance < self.parking_distance + 0.5):
                     v = -self.velocity
                     steer = -(math.atan(self.relative_y/self.relative_x))
+                    (steer, v) = pp.purepursuit(look_ahead, car_length, self.velocity, 0, 0, 0, np.array(([-.35,0], [self.relative_x - 0.35, self.relative_y])))
+                    v = -v
+                    steer = -steer
                 else:
                     (steer, v) = pp.purepursuit(look_ahead, car_length, self.velocity, 0, 0, 0, np.array(([0,0], [self.relative_x, self.relative_y])))
             else:
