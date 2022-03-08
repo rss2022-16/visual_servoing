@@ -19,7 +19,7 @@ class ParkingController():
 
     # PP Stuff
     LIDAR_TO_BASE_AXEL = -0.35 # Temporary parameter
-    LOOKAHEAD_DISTANCE = PARK_DIST / 1.5 # Should be smaller than parking distance
+    LOOKAHEAD_DISTANCE = .6
     L = 0.375
 
     # Controller Stuff
@@ -55,7 +55,7 @@ class ParkingController():
             ## Do we need to define a line and stick with it, or can we re-define every timestep?
 
             waypoints = np.array(([self.LIDAR_TO_BASE_AXEL, 0], \
-                [self.LIDAR_TO_BASE_AXEL + self.relative_x, self.relative_y]))
+                [self.LIDAR_TO_BASE_AXEL + 5*self.relative_x, 5*self.relative_y]))
 
             eta, vel = purepursuit(self.LOOKAHEAD_DISTANCE, self.L, self.VEL, 
                 self.LIDAR_TO_BASE_AXEL, 0, 0, waypoints)

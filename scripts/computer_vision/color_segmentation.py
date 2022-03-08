@@ -36,8 +36,8 @@ def cd_color_segmentation(img, template):
 	########## YOUR CODE STARTS HERE ##########
 	hsv_image = cv2.cvtColor(img,cv2.COLOR_BGR2HSV)
 	# image_print(hsv_image)
-	orange_min = np.array([5, 50, 50])
-	orange_max = np.array([15,255, 255])
+	orange_min = np.array([5, 50, 125])
+	orange_max = np.array([15, 255, 255])
 	mask = cv2.inRange(hsv_image, orange_min, orange_max)
 	# image_print(mask)
 	erosion_kernel = np.ones((15,15), np.uint8)

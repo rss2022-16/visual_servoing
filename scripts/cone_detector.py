@@ -41,16 +41,16 @@ class ConeDetector():
         # YOUR CODE HERE
         # detect the cone and publish its
         # pixel location in the image.i
-        print ("ENTERED_CALLBACK")
-        rospy.loginfo("yessir")
         image = self.bridge.imgmsg_to_cv2(image_msg, "bgr8")
+        #print (image.shape)
+        image = image[215:235, :, :] 
         bbox = cd_color_segmentation(image, None)
-        print (bbox)
         bottom_pixel = ( (bbox[1][0] + bbox[0][0])/2.0, bbox[1][1])
-        print (bottom_pixel)
         pixel = ConeLocationPixel()
-        pixel.u = bottom_pixel[0]
-        pixel.v = bottom_pixel[1]
+        #print (bottom_pixel)
+        pixel.u = bottom_pixel[0] + 0
+        pixel.v = bottom_pixel[1] + 215
+        #print (pixel.v)
         self.cone_pub.publish(pixel)
         # vvvvvvvvvvvvvvvvvvvvvvvvvvvvvv
         #################################

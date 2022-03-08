@@ -1,4 +1,4 @@
-parking_distance : 0.5
-velocity : 0.5
-goal_range : 0.2
+parking_distance : 0.3
+velocity : 1.1
+goal_range : 0.05
 y_tolerance : 0.05
